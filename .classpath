@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="src" path="ReadZipFile/src"/>
+	<classpathentry kind="lib" path="D:/EclipseWorkspace/RAndD/ReadZipFile/ReadZipFile/lib/pixelmed.jar"/>
+	<classpathentry kind="lib" path="D:/EclipseWorkspace/RAndD/ReadZipFile/ReadZipFile/lib/pixelmed_codec.jar"/>
+	<classpathentry kind="lib" path="D:/EclipseWorkspace/RAndD/ReadZipFile/ReadZipFile/lib/pixelmed_imageio.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

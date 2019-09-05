@@ -28,56 +28,46 @@ public class ReadZipFile
 	{
 		ZipFile zipFile;
 		byte[] buffer = new byte[1024];
-		try
+		try (FileInputStream fis = new FileInputStream(fileName);
+				BufferedInputStream bis = new BufferedInputStream(fis);
+				ZipInputStream zipInputStream = new ZipInputStream(bis))
 		{
 			zipFile = new ZipFile(fileName);
 
-			try (FileInputStream fis = new FileInputStream(fileName);
-					BufferedInputStream bis = new BufferedInputStream(fis);
-					ZipInputStream zipInputStream = new ZipInputStream(bis))
+			ZipEntry zipEntry;
+
+			while ((zipEntry = zipInputStream.getNextEntry()) != null)
 			{
-
-				ZipEntry zipEntry;
-
-				while ((zipEntry = zipInputStream.getNextEntry()) != null)
+				if (zipEntry.getName().contains(".zip"))
 				{
-					if (zipEntry.getName().contains(".zip"))
+					System.out.println(zipEntry.getName());
+					File newFile = new File("D:\\Dicom file\\New folder\\" + zipEntry.getName());
+					new File(newFile.getParent()).mkdirs();
+					FileOutputStream fileOutputStream = new FileOutputStream(newFile);
+					int len;
+					while ((len = zipInputStream.read(buffer)) > 0)
 					{
-						System.out.println(zipEntry.getName());
-						File newFile = new File("D:\\Dicom file\\New folder\\" + zipEntry.getName());
-						new File(newFile.getParent()).mkdirs();
-						FileOutputStream fileOutputStream = new FileOutputStream(newFile);
-						int len;
-						while ((len = zipInputStream.read(buffer)) > 0)
-						{
-							fileOutputStream.write(buffer, 0, len);
-						}
-						fileOutputStream.close();
-						readWithZipInputStream(newFile.getAbsolutePath());
-
-					} else
-					{
-
-						DicomInputStream dicomInputStream = new DicomInputStream(zipFile.getInputStream(zipEntry));
-						AttributeList attributeList = new AttributeList();
-
-						try
-						{
-							attributeList.read(dicomInputStream);
-
-							System.out.println(zipEntry.getName() + " : " + Attribute
-									.getDelimitedStringValuesOrEmptyString(attributeList, TagFromName.SOPClassUID));
-
-						} catch (Exception ex)
-						{
-							ex.printStackTrace();
-						} finally
-						{
-							dicomInputStream.close();
-						}
+						fileOutputStream.write(buffer, 0, len);
 					}
-				}
+					fileOutputStream.close();
+					readWithZipInputStream(newFile.getAbsolutePath());
+				} else
+				{
+					DicomInputStream dicomInputStream = new DicomInputStream(zipFile.getInputStream(zipEntry));
+					AttributeList attributeList = new AttributeList();
+					try
+					{
+						attributeList.read(dicomInputStream);
 
+						System.out.println(zipEntry.getName() + " : " + Attribute
+								.getDelimitedStringValuesOrEmptyString(attributeList, TagFromName.SOPClassUID));
+
+					} catch (Exception ex)
+					{
+						ex.printStackTrace();
+					}
+					dicomInputStream.close();
+				}
 			}
 		} catch (IOException e)
 		{
