@@ -21,10 +21,10 @@ public class ReadZipFile
 		ReadZipFile readZipFile = new ReadZipFile();
 
 		String fileName = "D:\\Dicom file\\New folder\\zipping.zip";
-		readZipFile.readWithZipInputStream(fileName);
+		readZipFile.readZip(fileName);
 	}
 
-	private void readWithZipInputStream(String fileName)
+	private void readZip(String fileName)
 	{
 		ZipFile zipFile;
 		byte[] buffer = new byte[1024];
@@ -50,7 +50,7 @@ public class ReadZipFile
 						fileOutputStream.write(buffer, 0, len);
 					}
 					fileOutputStream.close();
-					readWithZipInputStream(newFile.getAbsolutePath());
+					readZip(newFile.getAbsolutePath());
 				} else
 				{
 					DicomInputStream dicomInputStream = new DicomInputStream(zipFile.getInputStream(zipEntry));
