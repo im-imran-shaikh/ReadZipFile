@@ -3,6 +3,7 @@ package readZipFile;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.zip.ZipEntry;
@@ -27,7 +28,7 @@ public class ReadZipFile
 	private void readZip(String fileName)
 	{
 		ZipFile zipFile;
-		byte[] buffer = new byte[1024];
+
 		try (FileInputStream fis = new FileInputStream(fileName);
 				BufferedInputStream bis = new BufferedInputStream(fis);
 				ZipInputStream zipInputStream = new ZipInputStream(bis))
@@ -40,33 +41,10 @@ public class ReadZipFile
 			{
 				if (zipEntry.getName().contains(".zip"))
 				{
-					System.out.println(zipEntry.getName());
-					File newFile = new File("D:\\Dicom file\\New folder\\" + zipEntry.getName());
-					new File(newFile.getParent()).mkdirs();
-					FileOutputStream fileOutputStream = new FileOutputStream(newFile);
-					int len;
-					while ((len = zipInputStream.read(buffer)) > 0)
-					{
-						fileOutputStream.write(buffer, 0, len);
-					}
-					fileOutputStream.close();
-					readZip(newFile.getAbsolutePath());
+					nestedZip(zipEntry, zipInputStream);
 				} else
 				{
-					DicomInputStream dicomInputStream = new DicomInputStream(zipFile.getInputStream(zipEntry));
-					AttributeList attributeList = new AttributeList();
-					try
-					{
-						attributeList.read(dicomInputStream);
-
-						System.out.println(zipEntry.getName() + " : " + Attribute
-								.getDelimitedStringValuesOrEmptyString(attributeList, TagFromName.SOPClassUID));
-
-					} catch (Exception ex)
-					{
-						ex.printStackTrace();
-					}
-					dicomInputStream.close();
+					readDicomFile(zipFile, zipEntry);
 				}
 			}
 		} catch (IOException e)
@@ -74,5 +52,50 @@ public class ReadZipFile
 			e.printStackTrace();
 		}
 
+	}
+
+	private void nestedZip(ZipEntry zipEntry, ZipInputStream zipInputStream)
+	{
+		byte[] buffer = new byte[1024];
+		System.out.println(zipEntry.getName());
+		File newFile = new File("D:\\Dicom file\\New folder\\" + zipEntry.getName());
+		new File(newFile.getParent()).mkdirs();
+		FileOutputStream fileOutputStream;
+		try
+		{
+			fileOutputStream = new FileOutputStream(newFile);
+			int length;
+			while ((length = zipInputStream.read(buffer)) > 0)
+			{
+				fileOutputStream.write(buffer, 0, length);
+			}
+			fileOutputStream.close();
+			readZip(newFile.getAbsolutePath());
+		} catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+
+	}
+
+	private void readDicomFile(ZipFile zipFile, ZipEntry zipEntry)
+	{
+		DicomInputStream dicomInputStream;
+		try
+		{
+			dicomInputStream = new DicomInputStream(zipFile.getInputStream(zipEntry));
+
+			AttributeList attributeList = new AttributeList();
+
+			attributeList.read(dicomInputStream);
+
+			System.out.println(zipEntry.getName() + " : "
+					+ Attribute.getDelimitedStringValuesOrEmptyString(attributeList, TagFromName.SOPClassUID));
+			dicomInputStream.close();
+
+		} catch (Exception ex)
+		{
+			ex.printStackTrace();
+		}
 	}
 }
